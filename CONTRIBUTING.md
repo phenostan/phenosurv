@@ -21,7 +21,7 @@ We use [pixi](https://pixi.sh) to manage the development environment. One comman
 
 2. **Clone the repository and install the environment:**
    ```sh
-   git clone https://github.com/milesalanmoore/phenosurv.git
+   git clone https://github.com/phenostan/phenosurv.git
    cd phenosurv
    pixi install
    ```
@@ -39,7 +39,10 @@ We use [pixi](https://pixi.sh) to manage the development environment. One comman
 | Run all tests | `pixi run test` |
 | Run one test file | `pixi run python -m unittest tests.test_thresh_surv_gdd -v` |
 | Run one test | `pixi run python -m unittest tests.test_thresh_surv_gdd.TestThreshSurvGDDPrintCode.test_print_code_writes_to_stdout` |
+| Update the packaged Stan models from phenostan | `pixi run sync-models` (add `--ref v0.1.0` for a specific tag, branch or commit) |
 | Open a shell inside the environment | `pixi shell` (then use `python` directly; `exit` to leave) |
+
+The Stan models in `src/phenosurv/stan/` are copied from [phenostan](https://github.com/phenostan/phenostan); don't edit them here. Change the model in phenostan, then run `pixi run sync-models` and commit the updated files together with `PHENOSTAN_VERSION`.
 
 phenosurv itself is installed in editable mode, so changes under `src/phenosurv/` take effect right away without reinstalling.
 
