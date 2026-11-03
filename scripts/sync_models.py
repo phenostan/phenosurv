@@ -17,7 +17,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-DEFAULT_SOURCE = "https://github.com/milesalanmoore/phenostan.git"
+DEFAULT_SOURCE = "https://github.com/phenostan/phenostan.git"
 MODELS_SUBDIR = Path("src") / "models"
 STAN_DIR = Path(__file__).resolve().parent.parent / "src" / "phenosurv" / "stan"
 
