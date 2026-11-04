@@ -4,6 +4,7 @@ from importlib.resources import files
 
 # pyrefly: ignore[missing-import]
 import cmdstanpy
+import pandas as pd
 
 
 class ThreshSurvGDD:
@@ -64,6 +65,17 @@ class ThreshSurvGDD:
         """
         self._check_is_fitted()
         return self.fit_obj.diagnose()
+
+    def summary(self) -> pd.DataFrame:
+        """
+        Generates a summary table of the posterior distribution
+
+        Returns: 
+        pd.DataFrame: Summary statistics (Mean, MCSE, StdDev, qantiles, 
+            N_eff, R_hat).
+        """
+        self._check_is_fitted()
+        return self.fit_obj.summary()
 
         
 
