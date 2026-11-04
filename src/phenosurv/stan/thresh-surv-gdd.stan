@@ -3,6 +3,15 @@
 /*                                                                             */
 /*     forcing(T) = max(T - T_base, 0)        (FU / day = degree-days)         */
 /*                                                                             */
+/* ########################################################################### */ 
+// #
+// # The code is copyright 2024 Michael Betancourt and licensed under the
+// # new BSD (3-clause) license:
+// #  https://opensource.org/licenses/BSD-3-Clause
+// #
+// # For more information see https://github.com/betanalpha/mcmc_diagnostics.
+// #
+// ############################################################################
 
 functions {
 
