@@ -1,6 +1,11 @@
 # Contributing to phenosurv
 
-Thanks for helping build phenosurv! This guide covers setting up a local development environment and how we write code here: tests first.
+Thanks for helping build phenosurv! This guide covers the development environment, how we write code here (tests first), and how to review it. For what the package does and how to use it, start with the [README](README.md).
+
+- [Local setup](#local-setup)
+- [Test-driven development](#test-driven-development)
+- [Reviewing code](#reviewing-code)
+- [Submitting changes](#submitting-changes)
 
 ## Local setup
 
@@ -29,7 +34,8 @@ We use [pixi](https://pixi.sh) to manage the development environment. One comman
 
 3. **Check that everything works:**
    ```sh
-   pixi run test
+   pixi run test      # unit tests
+   pixi run example   # end-to-end fit, diagnose and predict (examples/worked_example.py)
    ```
 
 ### Day-to-day commands
@@ -39,6 +45,8 @@ We use [pixi](https://pixi.sh) to manage the development environment. One comman
 | Run all tests | `pixi run test` |
 | Run one test file | `pixi run python -m unittest tests.test_thresh_surv_gdd -v` |
 | Run one test | `pixi run python -m unittest tests.test_thresh_surv_gdd.TestThreshSurvGDDPrintCode.test_print_code_writes_to_stdout` |
+| Run the worked example and regenerate `docs/figures/` | `pixi run example` |
+| Regenerate the simulated test data | `pixi run simulate-testdata` (see `--help` for options) |
 | Update the packaged Stan models from phenostan | `pixi run sync-models` (add `--ref v0.1.0` for a specific tag, branch or commit) |
 | Open a shell inside the environment | `pixi shell` (then use `python` directly; `exit` to leave) |
 
@@ -77,6 +85,24 @@ Then pick the next behavior and repeat.
 - Library code lives in `src/phenosurv/`; tests live in `tests/`.
 - Test files are named `test_<thing>.py` (for example `tests/test_thresh_surv_gdd.py`) so `unittest` discovers them automatically.
 - Group related tests in `unittest.TestCase` classes, and use `setUp` for shared setup.
+
+## Reviewing code
+
+You don't need to know Stan or Bayesian statistics to review most of phenosurv: the Python layer is a thin wrapper around [cmdstanpy](https://mc-stan.org/cmdstanpy/), and the README has a short glossary of the terms used. The Stan models themselves are reviewed in [phenostan](https://github.com/phenostan/phenostan), not here.
+
+**Get the code running first.** Check out the branch, then run `pixi install`, `pixi run test` and `pixi run example`. If any of these fail on your machine, that is itself a useful finding.
+
+**Where the code is.** Almost everything is in `src/phenosurv/thresh_surv_gdd.py` (the `ThreshSurvGDD` class) and its tests in `tests/test_thresh_surv_gdd.py`. `scripts/` holds developer tools that are not part of the installed package.
+
+**What to look for:**
+
+- **Correctness.** Do the methods do what their docstrings say? Are the data passed to Stan in the right shape and with 1-based indices?
+- **Tests.** Is each behavior covered by a test that would fail if the behavior broke? Are tests checking behavior rather than implementation (see above)? Is anything important untested?
+- **Usability for ecologists.** Are the names, error messages and return types clear to someone who knows their data but not Stan? Would a mistake in the input data be caught early with a helpful message?
+- **Packaging.** Does the package work when installed rather than run from the repo (e.g. Stan files found through `importlib.resources`, compiled executables written somewhere writable)?
+- **Readability.** Naming, docstrings, duplication and anything that made the code hard to follow.
+
+When you leave a comment, say whether it must be fixed before merging or is a suggestion, and point to the file and line.
 
 ## Submitting changes
 
