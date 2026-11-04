@@ -96,16 +96,20 @@ class TestThreshSurvGDDFitted(unittest.TestCase):
         self.assertIsInstance(self.m.fit_obj, cmdstanpy.CmdStanMCMC)
 
     def test_fitted_diagnoses_returns_string(self):
-            # Just grab the returned string directly!
             output = self.m.diagnose()
 
             self.assertNotEqual(output.strip(), "")
             
-            # Check if standard cmdstanpy diagnostic phrases are in the output
             self.assertIn("transitions treedepth", output.lower())
             self.assertIn("divergences", output.lower())
             self.assertIn("e-bfmi", output.lower())
             self.assertIn("rank-normalized split", output.lower())
+
+    def test_fitted_summary(self):
+        summary = self.m.summary()
+
+        self.assertIsInstance(summary, pd.DataFrame)
+        self.assertGreater(summary.shape[0], 1)
 
 
 if __name__ == "__main__":
