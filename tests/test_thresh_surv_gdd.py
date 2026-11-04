@@ -91,7 +91,7 @@ class TestThreshSurvGDDFitModel(unittest.TestCase):
     def test_fitted_is_cmdstanmcmc(self):
         fit = self.m.fit(data=str(self.path_test_data), **self.fit_args)
 
-        self.assertIsInstance(fit, cmdstanpy.CmdStanMCMC)
+        self.assertIsInstance(fit.fit_obj, cmdstanpy.CmdStanMCMC)
 
 if __name__ == "__main__":
     unittest.main()
