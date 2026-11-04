@@ -3087,7 +3087,7 @@ packages:
 - pypi: ./
   name: phenosurv
   version: 0.1.0
-  sha256: 10b9f1dcf02059a3afa478c4aacf46d134aa2628dd70ff6912beaecdcdb7d9b5
+  sha256: ac1ff7587cfd748c2424c64ac06b538891df8b8e28faf4f3f01705169138fb9f
   requires_dist:
   - cmdstanpy>=1.2
   requires_python: '>=3.11'
