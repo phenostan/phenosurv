@@ -95,20 +95,17 @@ class TestThreshSurvGDDFitted(unittest.TestCase):
     def test_fitted_is_cmdstanmcmc(self):
         self.assertIsInstance(self.m.fit_obj, cmdstanpy.CmdStanMCMC)
 
-    def test_fitted_diagnoses_prints_to_console(self):
-        buffer = io.StringIO()
-        with contextlib.redirect_stdout(buffer):
-            self.m.diagnose()
-        output = buffer.getvalue()
+    def test_fitted_diagnoses_returns_string(self):
+            # Just grab the returned string directly!
+            output = self.m.diagnose()
 
-        self.assertNotEqual(output.strip(), "")
-        
-        # Optional: check if standard cmdstanpy diagnostic phrases are in the output
-        # e.g., checking that it looked for divergences
-        self.assertIn("transitions treedepth", output.lower())
-        self.assertIn("divergences", output.lower())
-        self.assertIn("e-bfmi", output.lower())
-        self.assertIn("rank-normalized split", output.lower())
+            self.assertNotEqual(output.strip(), "")
+            
+            # Check if standard cmdstanpy diagnostic phrases are in the output
+            self.assertIn("transitions treedepth", output.lower())
+            self.assertIn("divergences", output.lower())
+            self.assertIn("e-bfmi", output.lower())
+            self.assertIn("rank-normalized split", output.lower())
 
 
 if __name__ == "__main__":
