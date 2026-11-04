@@ -54,7 +54,16 @@ class ThreshSurvGDD:
         """
         if self.fit_obj == None:
             raise RuntimeError("Model has not been fitted. Call .fit() first...")
-            
+
+    def diagnose(self) -> str:
+        """
+        Runs cmdtan's built-in diagnostics for HMC/NUTS, etc.
+
+        Returns:
+            str: Daignostic output message.
+        """
+        self._check_is_fitted()
+        return self.fit_obj.diagnose()
 
         
 
