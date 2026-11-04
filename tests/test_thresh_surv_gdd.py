@@ -6,6 +6,9 @@ import io
 import unittest
 from importlib.resources import files
 
+# pyrefly: ignore[missing-import]
+import cmdstanpy
+
 from phenosurv import ThreshSurvGDD
 
 
@@ -18,6 +21,15 @@ class TestThreshSurvGDDClass(unittest.TestCase):
         # Inspecting the Stan code should not require data.
         model = ThreshSurvGDD()
         self.assertIsInstance(model, ThreshSurvGDD)
+
+    def test_model_is_compiled_cdmstanmodel(self):
+        m = ThreshSurvGDD()
+        
+        # check self.model compiles and is a CmdStanModel instance
+        self.assertIsInstance(m.model, cmdstanpy.CmdStanModel)
+
+        # verify the model has its c++ executeable
+        self.assertIsNotNone(m.model.exe_file)
 
 
 class TestThreshSurvGDDPrintCode(unittest.TestCase):
