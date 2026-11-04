@@ -34,3 +34,4 @@ phenosurv = { path = ".", editable = true }
 [tool.pixi.tasks]
 test = "python -m unittest discover -s tests -t . -v"
 sync-models = "python scripts/sync_models.py"
+simulate-testdata = "python scripts/simulate_testdata.py"
