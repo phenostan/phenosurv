@@ -9,6 +9,7 @@ from pathlib import Path
 
 # pyrefly: ignore[missing-import]
 import cmdstanpy
+import pandas as pd
 
 from phenosurv import ThreshSurvGDD
 
