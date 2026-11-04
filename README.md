@@ -1,16 +1,26 @@
 # phenosurv <img src="assets/phenosurv-hex.png" align="right" width="140" alt="phenosurv hex logo" />
 
-**phenosurv** is a Python interface to [phenostan](https://github.com/phenostan/phenostan), a set of Bayesian models for predicting when plants reach a phenological stage (for example flowering) from daily temperature. It lets ecologists fit those models to their own data, check the fit and make predictions without writing Stan code.
+**phenosurv** is a Python interface to [phenostan](https://github.com/phenostan/phenostan), a set of Bayesian models for modeling when plants reach a phenological stage (for example flowering) from daily temperature. It lets ecologists fit those models to their own data, check the fit, conduct inference, and make predictions without writing reinventing Stan code. We also plan to develop an R interface to `phenostan`, `phenostanr`, as well as a website.
 
-> **Status:** work in progress (v0.1.0, not yet on PyPI). One model, `ThreshSurvGDD`, is available. The API is being built test-first and may change.
+Most existing phenological modeling software in Python and R contain process models for trees (e.g. Uniforc, Sequential, etc.) and are fit with maximum likelihood or simulated annealing. Other phenological software are designed for use with remote sensing data or herbaria records. Instead, this package provides simple, reproducible access to advanced models purpose-built for field collected data including censoring, random effects, and sequential multi-stage data (e.g. emergece -> anthesis -> senescence). We plan to equip `phenostan` (and therefore `phenosurv`) with several models from recent methodological advances to address these challenges unique to phenological field observations of angiosperms, including:
+- Thresholding Survival Models (Betancourt 2022) with process-based forcing kernels
+  - Growing Degree Day (**This model currently available as `phenosurv.ThreshSurvGDD`**)
+  - Wang & Engel (planned)
+- Sequential Survival Models for multi-stage categorical phenology observations (planned)
+  - Exponential hazards
+  - Weibull hazards
+  - Log Logistic hazards
 
-### Overview of the model
-`ThreshSurvGDD` is a *threshold survival model with growing-degree-day forcing*. From a starting day (the **precursor**, such as planting), each day adds forcing `max(T − T_base, 0)` in degree-days. The event (such as flowering) happens on the day accumulated forcing passes a threshold. The threshold varies from plant to plant: it is drawn from a logistic distribution centred on a genotype-specific requirement `Psi0[g]` with spread `sigma`, and genotype requirements share a common mean `Psi0_bar` and spread `tau_psi0`. The model estimates `T_base`, `Psi0`, `sigma` and the genotype-level parameters from observed precursor and event days. Use `ThreshSurvGDD().print_code()` to read the Stan source. The original source code, prior to modification, is from
-Betancourt (2022).
+> **Status:** work in progress (prerelease, not yet on PyPI). One model, `ThreshSurvGDD`, is available. The API is being built test-first and may change. This package started as part of a class project on software engineering for scientists. In this class, we are learning to use industry standard best practices and generative artificial intelligence (gen-A.I) tools in thoughtful ways to develop scientifc software. Review the AI-POLICY.md file to read more about our view on responsible gen-AI use in scientific software development.
+
+### Model Overview
+
+#### Thresholding Survival Model with GDD forcing kernel
+`ThreshSurvGDD` is a *threshold survival model with growing-degree-day forcing*. From a starting day (the **precursor** event, e.g. planting), each day adds forcing `max(T − T_base, 0)` in degree-days. The event (eg flowering) happens on the day that accumulated forcing passes a threshold. The threshold varies from plant to plant: it is drawn from a logistic distribution centred on a genotype-specific requirement `Psi0[g]` with spread `sigma`, and genotype requirements share a common mean `Psi0_bar` and spread `tau_psi0`. The model estimates `T_base`, `Psi0`, `sigma` and the genotype-level parameters from observed precursor and event days. Use `ThreshSurvGDD().print_code()` to read the Stan source. The original source code, prior to modification, is from Betancourt (2022).
 
 ## Installation
 
-phenosurv runs its models with [CmdStan](https://mc-stan.org/docs/cmdstan-guide/), the command-line version of the [Stan](https://mc-stan.org) language. CmdStan compiles each model to a C++ program, so it needs a C++ toolchain. Python reaches CmdStan through [cmdstanpy](https://mc-stan.org/cmdstanpy/).
+`phenosurv` runs its models with [CmdStan](https://mc-stan.org/docs/cmdstan-guide/), the command-line version of the [Stan](https://mc-stan.org) language. CmdStan compiles each model to a C++ program, so it needs a C++ toolchain. Python reaches CmdStan through [cmdstanpy](https://mc-stan.org/cmdstanpy/).
 
 ### Recommended: pixi (CmdStan and compiler included)
 
@@ -18,7 +28,7 @@ phenosurv runs its models with [CmdStan](https://mc-stan.org/docs/cmdstan-guide/
 
 ```sh
 # 1. Install pixi (once per computer; restart the terminal afterwards)
-curl -fsSL https://pixi.sh/install.sh | sh                                     # macOS / Linux
+curl -fsSL https://pixi.sh/install.sh | sh  # macOS / Linux
 # powershell -ExecutionPolicy ByPass -c "irm -useb https://pixi.sh/install.ps1 | iex"   # Windows
 
 # 2. Get the code and build the environment (the first run takes a few minutes)
@@ -31,11 +41,11 @@ pixi run test       # test suite (a few seconds once the model is compiled)
 pixi run example    # worked example below; regenerates docs/figures/
 ```
 
-Use `pixi run python ...` or `pixi shell` to work inside the environment.
+Use `pixi run python ...` for single commands or enter the environment with `pixi shell` before running commands to work inside the environment. For those coming from `mamba` or `conda`, `pixi shell` is similar to running `conda activate this-environment.yml`.
 
 ### Alternative: pip or conda in your own environment
 
-phenosurv itself only depends on `cmdstanpy`, but **CmdStan must also be installed**. The simplest way is conda-forge, which supplies CmdStan together with its compiler:
+`phenosurv` itself only depends on `cmdstanpy`, but **CmdStan must also be installed**. The simplest way is conda-forge, which supplies CmdStan together with its compiler:
 
 ```sh
 conda install -c conda-forge cmdstanpy cmdstan     # or mamba / micromamba
@@ -59,11 +69,10 @@ pred = model.predict(new_data, seed=2)           # (n_draws, N) array of predict
 | Method | What it does | Returns |
 | --- | --- | --- |
 | `print_code()` | Prints the Stan model | `None` |
-| `fit(data, chains=4, iter_warmup=1000, iter_sampling=1000, **kwargs)` | Draws posterior samples with NUTS. Extra arguments (`seed`, `adapt_delta`, ...) go to [`CmdStanModel.sample`](https://mc-stan.org/cmdstanpy/api.html#cmdstanpy.CmdStanModel.sample) | `self` |
-| `diagnose()` | Runs CmdStan's checks for divergences, tree depth, E-BFMI, R-hat and effective sample size | `str` |
-| `summary()` | Mean, MCSE, SD, quantiles, ESS and R-hat for every parameter | `pandas.DataFrame` |
-| `predict(data=None, **kwargs)` | Predicts event days for new data (`events` may be omitted) or, by default, for the fitted data. Does not refit | `numpy` int array, one row per posterior draw, one column per event |
-| `fit_obj` | The underlying [`CmdStanMCMC`](https://mc-stan.org/cmdstanpy/api.html#cmdstanpy.CmdStanMCMC) object, e.g. `model.fit_obj.draws_pd()` | |
+| `fit(data, chains=4, iter_warmup=1000, iter_sampling=1000, **kwargs)` | Wrapper for `cmdstanpy.CmdStanModel.sample`. Draws posterior samples with NUTS. Extra arguments (`seed`, `adapt_delta`, ...) go to [`CmdStanModel.sample`](https://mc-stan.org/cmdstanpy/api.html#cmdstanpy.CmdStanModel.sample) | `self` |
+| `diagnose()` | Wrapper for `cmdstanpy.CmdStanMCMC.diagnose`. Runs CmdStan's checks for divergences, tree depth, E-BFMI, R-hat and effective sample size | `str` |
+| `summary()` | Wrapper for `cmdstanpy.CmdStanMCMC.summary`. Mean, MCSE, SD, quantiles, ESS and R-hat for every parameter | `pandas.DataFrame` |
+| `predict(data=None, **kwargs)` | Predicts event days for new data (`events` may be omitted) or, by default, for the fitted data. Exposes the underlying [`CmdStanMCMC`](https://mc-stan.org/cmdstanpy/api.html#cmdstanpy.CmdStanMCMC) object, for use with other software like `Arviz` for diagnostics and visualization| |
 
 Planned (see issue #2): `posterior()`, `visualize()`, `report()`.
 
@@ -73,7 +82,7 @@ Data is a dict (or JSON file) in the layout the Stan program expects. Site-years
 
 | Field | Shape | Meaning |
 | --- | --- | --- |
-| `N_site_years` | int | Number of site-years (one site in one year) |
+| `N_site_years` | int | Number of site-years (one site in one year = 1) |
 | `obs_temps` | `N_obs_temps` | Daily mean temperature (°C) for every site-year, concatenated |
 | `N_days`, `temp_start_idxs` | `N_site_years` | Days in each site-year, and where its temperatures start in `obs_temps` |
 | `N` | int | Number of events (e.g. individual plants) |
