@@ -5,6 +5,7 @@ import inspect
 import io
 import unittest
 from importlib.resources import files
+from pathlib import Path
 
 # pyrefly: ignore[missing-import]
 import cmdstanpy
@@ -74,6 +75,23 @@ class TestThreshSurvGDDPrintCode(unittest.TestCase):
         packaged = (files("phenosurv") / "stan" / "thresh-surv-gdd.stan").read_text()
         self.assertEqual(self._printed_code().rstrip("\n"), packaged.rstrip("\n"))
 
+class TestThreshSurvGDDFitModel(unittest.TestCase):
+
+    def setUp(self):
+        self.m = ThreshSurvGDD()
+        self.path_test_data = Path("tests", "data", "testdata.json")
+        self.fit_args = {
+            "chains": 2,
+            "iter_warmup": 300,
+            "iter_sampling": 300,
+            "seed": 1997,
+            "show_progress": False
+        }
+
+    def test_fitted_is_cmdstanmcmc(self):
+        fit = self.m.fit(data=str(self.path_test_data), **self.fit_args)
+
+        self.assertIsInstance(fit.fit_obj, cmdstanpy.CmdStanMCMC)
 
 if __name__ == "__main__":
     unittest.main()
