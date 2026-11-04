@@ -25,6 +25,7 @@ platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
 python = ">=3.11"
 cmdstanpy = ">=1.2"
 cmdstan = "*"
+ipykernel = ">=7.4.0,<8"
 
 # Install phenosurv itself in editable mode so `import phenosurv` uses src/.
 [tool.pixi.pypi-dependencies]
